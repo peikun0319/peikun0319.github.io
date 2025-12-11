@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>純前端讀書排程系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #f3e9dd; }
+  </style>
+</head>
+<body class="p-6">
+  <h1 class="text-3xl font-bold mb-4 text-brown-700">📘 純前端讀書排程系統</h1>
+
+  <!-- 問強科弱科 -->
+  <div class="bg-white p-4 rounded-xl shadow mb-4">
+    <h2 class="text-xl font-bold mb-2">你的科目狀況</h2>
+    <label>強科：</label>
+    <input id="strong" class="border p-2 rounded w-full mb-2" placeholder="例如：英文" />
+    <label>弱科：</label>
+    <input id="weak" class="border p-2 rounded w-full mb-2" placeholder="例如：數學" />
+  </div>
+
+  <!-- 日期範圍 -->
+  <div class="bg-white p-4 rounded-xl shadow mb-4">
+    <h2 class="text-xl font-bold mb-2">考試日期範圍</h2>
+    <input id="examRange" type="text" class="border p-2 rounded w-full" placeholder="2025-01-01 ~ 2025-01-03" />
+  </div>
+
+  <!-- 任務輸入 -->
+  <div class="bg-white p-4 rounded-xl shadow mb-4">
+    <h2 class="text-xl font-bold mb-2">新增讀書任務</h2>
+    <input id="taskName" class="border p-2 rounded w-full mb-2" placeholder="科目：例如 數學章節練習" />
+    <input id="taskHours" class="border p-2 rounded w-full mb-2" placeholder="時數：例如 2 小時" />
+    <button onclick="addTask()" class="bg-amber-600 text-white w-full p-2 rounded-lg hover:bg-amber-700">加入任務</button>
+  </div>
+
+  <!-- 任務列表 -->
+  <div class="bg-white p-4 rounded-xl shadow mb-4">
+    <h2 class="text-xl font-bold mb-2">📚 你的讀書列表</h2>
+    <ul id="taskList" class="space-y-2"></ul>
+  </div>
+
+  <!-- 儲存與讀取 -->
+  <div class="flex gap-2">
+    <button onclick="saveData()" class="bg-green-700 text-white p-2 rounded-lg w-full">儲存到本機</button>
+    <button onclick="loadData()" class="bg-blue-700 text-white p-2 rounded-lg w-full">讀取資料</button>
+  </div>
+
+<script>
+  let tasks = [];
+
+  function addTask() {
+    const name = document.getElementById("taskName").value;
+    const hours = document.getElementById("taskHours").value;
+    if (!name || !hours) return showModal("請完整填寫任務與時數");
+
+    tasks.push({ name, hours });
+    renderTasks();
+    document.getElementById("taskName").value = "";
+    document.getElementById("taskHours").value = "";
+  }
+
+  function renderTasks() {
+    const list = document.getElementById("taskList");
+    list.innerHTML = "";
+
+    tasks.forEach((t, i) => {
+      const li = document.createElement("li");
+      li.className = "p-3 bg-amber-100 rounded-lg flex justify-between";
+      li.innerHTML = `${t.name} - ${t.hours} 小時
+        <button onclick="deleteTask(${i})" class='text-red-600 font-bold'>刪除</button>`;
+      list.appendChild(li);
+    });
+  }
+
+  function deleteTask(i) {
+    tasks.splice(i, 1);
+    renderTasks();
+  }
+
+  // === LocalStorage ===
+  function saveData() {
+    const data = {
+      strong: document.getElementById("strong").value,
+      weak: document.getElementById("weak").value,
+      examRange: document.getElementById("examRange").value,
+      tasks
+    };
+    localStorage.setItem("studyPlanner", JSON.stringify(data));
+    showModal("已儲存到本機✔");
+  }
+
+  function loadData() {
+    const raw = localStorage.getItem("studyPlanner");
+    if (!raw) return showModal("目前沒有資料");
+    const data = JSON.parse(raw);
+
+    document.getElementById("strong").value = data.strong || "";
+    document.getElementById("weak").value = data.weak || "";
+    document.getElementById("examRange").value = data.examRange || "";
+    tasks = data.tasks || [];
+    renderTasks();
+
+    showModal("已載入✔");
+  }
+</script>
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden">
+    <div class="bg-white p-6 rounded-xl shadow-xl w-72 text-center">
+      <p id="modalMsg" class="text-lg mb-4"></p>
+      <button onclick="closeModal()" class="bg-amber-600 text-white px-4 py-2 rounded-lg">好的</button>
+    </div>
+  </div>
+
+<script>
+  function showModal(msg) {
+    document.getElementById("modalMsg").innerText = msg;
+    document.getElementById("modal").classList.remove("hidden");
+  }
+  function closeModal() {
+    document.getElementById("modal").classList.add("hidden");
+  }
+</script>
+</body>
+</html>
