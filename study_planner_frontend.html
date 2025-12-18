@@ -1,150 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>讀書計畫</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body { transition: background 0.3s ease; }
+
+    /* 背景色 */
+    .bg-default { background-color: #f3e9dd; }
+    .bg-red { background-color: #fde2e2; }
+    .bg-orange { background-color: #fff1d6; }
+    .bg-green { background-color: #e6f4ea; }
+    .bg-blue { background-color: #e8f1fd; }
+    .bg-purple { background-color: #f1e8fd; }
+    .bg-rainbow {
+      background: linear-gradient(
+        135deg,
+        #fde2e2,
+        #fff1d6,
+        #e6f4ea,
+        #e8f1fd,
+        #f1e8fd
+      );
+    }
+
+    .earth-btn { background-color: #a47551; }
+    .earth-btn:hover { background-color: #8c5f3c; }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .calendar-cell {
+      background: #fff;
+      min-height: 120px;
+      padding: 8px;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .task-block {
+      background: #ffe8c8;
+      padding: 6px 8px;
+      border-radius: 6px;
+      margin-top: 6px;
+      font-size: 14px;
+    }
+
+    .label-muted { color: #6b5a4a; font-size: 14px; }
+  </style>
+</head>
+
+<body class="p-6 bg-default">
+
+<h1 class="text-3xl font-bold mb-4">📘 讀書計畫</h1>
+
+<!-- 背景顏色選擇 -->
+<div class="bg-white p-4 rounded-xl shadow mb-4">
+  <h2 class="text-xl font-bold mb-2">🎨 背景顏色</h2>
+  <select id="bgColorSelect" class="border p-2 rounded w-full">
+    <option value="default">米色（預設）</option>
+    <option value="red">紅色</option>
+    <option value="orange">橘色</option>
+    <option value="green">綠色</option>
+    <option value="blue">藍色</option>
+    <option value="purple">紫色</option>
+    <option value="rainbow">彩色</option>
+  </select>
+</div>
+
+<!-- 考試日期 -->
+<div class="bg-white p-4 rounded-xl shadow mb-4">
+  <h2 class="text-xl font-bold mb-2">考試日期</h2>
+  <input id="examDate" type="date" class="border p-2 rounded w-full" />
+</div>
+
+<!-- 每週可讀書時間 -->
+<div class="bg-white p-4 rounded-xl shadow mb-4">
+  <h2 class="text-xl font-bold mb-2">每週可讀書時間</h2>
+
+  <div class="grid grid-cols-1 gap-3">
+    <div><b>星期一</b><div class="flex gap-2"><input id="monStart" type="time" class="border p-2 rounded w-1/2"><input id="monEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+    <div><b>星期二</b><div class="flex gap-2"><input id="tueStart" type="time" class="border p-2 rounded w-1/2"><input id="tueEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+    <div><b>星期三</b><div class="flex gap-2"><input id="wedStart" type="time" class="border p-2 rounded w-1/2"><input id="wedEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+    <div><b>星期四</b><div class="flex gap-2"><input id="thuStart" type="time" class="border p-2 rounded w-1/2"><input id="thuEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+    <div><b>星期五</b><div class="flex gap-2"><input id="friStart" type="time" class="border p-2 rounded w-1/2"><input id="friEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+    <div><b>星期六</b><div class="flex gap-2"><input id="satStart" type="time" class="border p-2 rounded w-1/2"><input id="satEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+    <div><b>星期日</b><div class="flex gap-2"><input id="sunStart" type="time" class="border p-2 rounded w-1/2"><input id="sunEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+  </div>
+</div>
+
+<!-- 科目設定 -->
+<div class="bg-white p-4 rounded-xl shadow mb-4">
+  <h2 class="text-xl font-bold mb-2">科目設定</h2>
+  <input id="subjectInput" class="border p-2 rounded w-full mb-2" placeholder="例如：數學, 英文, 國文">
+  <input id="weakSubject" class="border p-2 rounded w-full mb-2" placeholder="最弱科目">
+  <label class="label-muted">讀多久休息（分鐘）</label>
+  <input id="breakEvery" type="number" value="50" class="border p-2 rounded w-full mb-2">
+  <label class="label-muted">休息多久（分鐘）</label>
+  <input id="breakLength" type="number" value="10" class="border p-2 rounded w-full">
+</div>
+
+<button id="btnGenerate" class="earth-btn text-white w-full p-3 rounded-lg mb-4 text-lg font-bold">
+  生成讀書日程表
+</button>
+
+<div class="bg-white p-4 rounded-xl shadow">
+  <h2 class="text-xl font-bold mb-4">📅 行事曆</h2>
+  <div id="calendar" class="calendar-grid"></div>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden">
+  <div class="bg-white p-6 rounded-xl w-72 text-center">
+    <p id="modalMsg" class="text-lg mb-4"></p>
+    <button onclick="closeModal()" class="earth-btn text-white px-4 py-2 rounded-lg">好的</button>
+  </div>
+</div>
+
 <script>
 /* ===== Modal ===== */
 function showModal(msg){
-  const modal = document.getElementById('modal');
-  const modalMsg = document.getElementById('modalMsg');
   modalMsg.innerText = msg;
   modal.classList.remove('hidden');
 }
 function closeModal(){
-  document.getElementById('modal').classList.add('hidden');
+  modal.classList.add('hidden');
 }
-window.closeModal = closeModal;
 
-/* ===== Main ===== */
-document.addEventListener('DOMContentLoaded', () => {
+/* ===== Background Color ===== */
+const bgSelect = document.getElementById('bgColorSelect');
+const bgClasses = {
+  default: 'bg-default',
+  red: 'bg-red',
+  orange: 'bg-orange',
+  green: 'bg-green',
+  blue: 'bg-blue',
+  purple: 'bg-purple',
+  rainbow: 'bg-rainbow'
+};
 
-  /* ---- DOM ---- */
-  const calendarEl = document.getElementById('calendar');
-  const btnGenerate = document.getElementById('btnGenerate');
-
-  const examDateEl = document.getElementById('examDate');
-  const subjectInputEl = document.getElementById('subjectInput');
-  const weakSubjectEl = document.getElementById('weakSubject');
-  const breakEveryEl = document.getElementById('breakEvery');
-  const breakLengthEl = document.getElementById('breakLength');
-
-  /* ---- Weekly time inputs ---- */
-  const weekInputs = {
-    0: { start: sunStart, end: sunEnd },
-    1: { start: monStart, end: monEnd },
-    2: { start: tueStart, end: tueEnd },
-    3: { start: wedStart, end: wedEnd },
-    4: { start: thuStart, end: thuEnd },
-    5: { start: friStart, end: friEnd },
-    6: { start: satStart, end: satEnd }
-  };
-
-  /* ---- Utils ---- */
-  function getDateRange(start, end){
-    const dates = [];
-    let d = new Date(start);
-    while(d <= end){
-      dates.push(new Date(d));
-      d.setDate(d.getDate() + 1);
-    }
-    return dates;
-  }
-
-  function getDailyMinutes(date){
-    const input = weekInputs[date.getDay()];
-    if(!input.start.value || !input.end.value) return 0;
-
-    const [sh, sm] = input.start.value.split(':').map(Number);
-    const [eh, em] = input.end.value.split(':').map(Number);
-
-    return (eh * 60 + em) - (sh * 60 + sm);
-  }
-
-  /* ---- Generate Plan ---- */
-  function generatePlan(){
-    if(!examDateEl.value) return showModal('請輸入考試日期');
-    if(!subjectInputEl.value) return showModal('請輸入科目');
-
-    const examDate = new Date(examDateEl.value);
-    examDate.setHours(0,0,0,0);
-
-    const subjects = subjectInputEl.value
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean);
-
-    const weakSubject = weakSubjectEl.value.trim();
-    const breakEvery = Number(breakEveryEl.value) || 50;
-    const breakLength = Number(breakLengthEl.value) || 10;
-
-    const today = new Date();
-    today.setHours(0,0,0,0);
-
-    const days = getDateRange(today, examDate);
-    const plan = [];
-
-    let subjectIndex = 0;
-
-    days.forEach(date => {
-      let minutesLeft = getDailyMinutes(date);
-      if(minutesLeft <= 0) return;
-
-      const slots = [];
-      while(minutesLeft > 0){
-        const subject = subjects[subjectIndex % subjects.length];
-        const studyTime =
-          subject === weakSubject
-            ? Math.min(breakEvery * 2, minutesLeft)
-            : Math.min(breakEvery, minutesLeft);
-
-        slots.push({ subject, minutes: studyTime });
-        minutesLeft -= studyTime + breakLength;
-        subjectIndex++;
-      }
-
-      plan.push({ date, slots });
-    });
-
-    renderCalendar(plan);
-    showModal('讀書日程表已生成！');
-  }
-
-  /* ---- Render Calendar ---- */
-  function renderCalendar(plan){
-    calendarEl.innerHTML = '';
-    const weekName = ['日','一','二','三','四','五','六'];
-
-    plan.forEach(day => {
-      const cell = document.createElement('div');
-      cell.className = 'calendar-cell';
-
-      const input = weekInputs[day.date.getDay()];
-      let currentMinutes = 0;
-
-      if(input.start.value){
-        const [h,m] = input.start.value.split(':').map(Number);
-        currentMinutes = h * 60 + m;
-      }
-
-      cell.innerHTML = `<b>${day.date.toISOString().split('T')[0]}（星期${weekName[day.date.getDay()]}）</b>`;
-
-      day.slots.forEach(slot => {
-        const startH = Math.floor(currentMinutes / 60);
-        const startM = currentMinutes % 60;
-        const end = currentMinutes + slot.minutes;
-        const endH = Math.floor(end / 60);
-        const endM = end % 60;
-
-        const block = document.createElement('div');
-        block.className = 'task-block';
-        block.innerText =
-          `${String(startH).padStart(2,'0')}:${String(startM).padStart(2,'0')}–` +
-          `${String(endH).padStart(2,'0')}:${String(endM).padStart(2,'0')} ${slot.subject}`;
-
-        cell.appendChild(block);
-        currentMinutes = end + Number(breakLengthEl.value);
-      });
-
-      calendarEl.appendChild(cell);
-    });
-  }
-
-  btnGenerate.addEventListener('click', generatePlan);
+bgSelect.addEventListener('change', () => {
+  Object.values(bgClasses).forEach(c => document.body.classList.remove(c));
+  document.body.classList.add(bgClasses[bgSelect.value]);
 });
+
+/* ===== Calendar Logic ===== */
+const calendarEl = document.getElementById('calendar');
+const btnGenerate = document.getElementById('btnGenerate');
+
+const weekInputs = {
+  0:{start:sunStart,end:sunEnd},
+  1:{start:monStart,end:monEnd},
+  2:{start:tueStart,end:tueEnd},
+  3:{start:wedStart,end:wedEnd},
+  4:{start:thuStart,end:thuEnd},
+  5:{start:friStart,end:friEnd},
+  6:{start:satStart,end:satEnd}
+};
+
+btnGenerate.onclick = () => {
+  const subjects = subjectInput.value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!examDate.value || subjects.length===0){
+    showModal('請填寫完整資料');
+    return;
+  }
+
+  calendarEl.innerHTML = '';
+  const start = new Date();
+  const end = new Date(examDate.value);
+  const weak = weakSubject.value;
+
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    const input = weekInputs[d.getDay()];
+    if(!input.start.value || !input.end.value) continue;
+
+    let [sh,sm] = input.start.value.split(':').map(Number);
+    let [eh,em] = input.end.value.split(':').map(Number);
+    let minutes = eh*60+em - (sh*60+sm);
+    if(minutes<=0) continue;
+
+    const cell = document.createElement('div');
+    cell.className='calendar-cell';
+    cell.innerHTML=`<b>${d.toISOString().split('T')[0]}</b>`;
+
+    let cur = sh*60+sm, i=0;
+    while(minutes>0){
+      const sub = subjects[i%subjects.length];
+      const len = sub===weak ? 100 : 50;
+      const endM = cur+len;
+      const block=document.createElement('div');
+      block.className='task-block';
+      block.innerText=
+        `${String(Math.floor(cur/60)).padStart(2,'0')}:${String(cur%60).padStart(2,'0')}–`+
+        `${String(Math.floor(endM/60)).padStart(2,'0')}:${String(endM%60).padStart(2,'0')} ${sub}`;
+      cell.appendChild(block);
+      cur=endM+10;
+      minutes-=len+10;
+      i++;
+    }
+    calendarEl.appendChild(cell);
+  }
+
+  showModal('讀書日程表已生成！');
+};
 </script>
+
+</body>
+</html>
