@@ -1,267 +1,215 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8" />
-<title>奶茶色文青讀書計畫</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>讀書計畫</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- Google Font -->
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    body { transition: background 0.3s ease; }
 
-<style>
-    body {
-        font-family: "Noto Sans TC", sans-serif;
-        background: #f4e9d8; /* 奶茶色 */
-        margin: 0;
-        padding: 20px;
+    /* 背景色 */
+    .bg-default { background-color: #f3e9dd; }
+    .bg-red { background-color: #fde2e2; }
+    .bg-orange { background-color: #fff1d6; }
+    .bg-green { background-color: #e6f4ea; }
+    .bg-blue { background-color: #e8f1fd; }
+    .bg-purple { background-color: #f1e8fd; }
+    .bg-rainbow {
+      background: linear-gradient(
+        135deg,
+        #fde2e2,
+        #fff1d6,
+        #e6f4ea,
+        #e8f1fd,
+        #f1e8fd
+      );
     }
 
-    h1, h2 {
-        color: #4b3427;
+    .earth-btn { background-color: #a47551; }
+    .earth-btn:hover { background-color: #8c5f3c; }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
     }
 
-    .card {
-        background: #fff;
-        padding: 20px;
-        margin: 15px 0;
-        border-radius: 12px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    .calendar-cell {
+      background: #fff;
+      min-height: 120px;
+      padding: 8px;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
 
-    .btn {
-        display: inline-block;
-        padding: 10px 18px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
-        margin: 5px;
-        transition: 0.2s;
-        color: white;
+    .task-block {
+      background: #ffe8c8;
+      padding: 6px 8px;
+      border-radius: 6px;
+      margin-top: 6px;
+      font-size: 14px;
     }
 
-    /* 大地色系按鈕 */
-    .btn-earth { background: #a0826a; }
-    .btn-earth:hover { background: #8d6f58; }
-
-    .btn-green { background: #6d8f6d; }
-    .btn-green:hover { background: #5b7c5b; }
-
-    .btn-red { background: #b76b5e; }
-    .btn-red:hover { background: #9c594e; }
-
-    input, select {
-        width: 100%;
-        padding: 10px;
-        border-radius: 8px;
-        border: 1px solid #c8b6a6;
-        margin-bottom: 12px;
-        outline: none;
-    }
-
-    /* Modal */
-    .modal-bg {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.4);
-        display: none;
-        align-items: center;
-        justify-content: center;
-    }
-    .modal {
-        background: white;
-        padding: 25px;
-        width: 90%;
-        max-width: 350px;
-        border-radius: 12px;
-        text-align: center;
-    }
-</style>
+    .label-muted { color: #6b5a4a; font-size: 14px; }
+  </style>
 </head>
-<body>
 
-<h1>📚 奶茶文青讀書計畫</h1>
+<body class="p-6 bg-default">
 
-<div class="card">
-    <h2>登入 / 使用者資料</h2>
-    <button class="btn btn-earth" onclick="openLogin()">登入</button>
-    <p id="loginStatus">尚未登入</p>
+<h1 class="text-3xl font-bold mb-4">📘 讀書計畫</h1>
+
+<!-- 背景顏色選擇 -->
+<div class="bg-white p-4 rounded-xl shadow mb-4">
+  <h2 class="text-xl font-bold mb-2">🎨 背景顏色</h2>
+  <select id="bgColorSelect" class="border p-2 rounded w-full">
+    <option value="default">米色（預設）</option>
+    <option value="red">紅色</option>
+    <option value="orange">橘色</option>
+    <option value="green">綠色</option>
+    <option value="blue">藍色</option>
+    <option value="purple">紫色</option>
+    <option value="rainbow">彩色</option>
+  </select>
 </div>
 
-<div class="card">
-    <h2>新增讀書項目</h2>
-    <input id="subject" placeholder="科目（例如：數學）">
-    <input id="hours" type="number" placeholder="時數（小時）">
-    <button class="btn btn-green" onclick="addStudy()">加入計畫</button>
+<!-- 考試日期 -->
+<div class="bg-white p-4 rounded-xl shadow mb-4">
+  <h2 class="text-xl font-bold mb-2">考試日期</h2>
+  <input id="examDate" type="date" class="border p-2 rounded w-full" />
 </div>
 
-<div class="card">
-    <h2>📅 已排程</h2>
-    <div id="list"></div>
+<!-- 每週可讀書時間 -->
+<div class="bg-white p-4 rounded-xl shadow mb-4">
+  <h2 class="text-xl font-bold mb-2">每週可讀書時間</h2>
+
+  <div class="grid grid-cols-1 gap-3">
+    <div><b>星期一</b><div class="flex gap-2"><input id="monStart" type="time" class="border p-2 rounded w-1/2"><input id="monEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+    <div><b>星期二</b><div class="flex gap-2"><input id="tueStart" type="time" class="border p-2 rounded w-1/2"><input id="tueEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+    <div><b>星期三</b><div class="flex gap-2"><input id="wedStart" type="time" class="border p-2 rounded w-1/2"><input id="wedEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+    <div><b>星期四</b><div class="flex gap-2"><input id="thuStart" type="time" class="border p-2 rounded w-1/2"><input id="thuEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+    <div><b>星期五</b><div class="flex gap-2"><input id="friStart" type="time" class="border p-2 rounded w-1/2"><input id="friEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+    <div><b>星期六</b><div class="flex gap-2"><input id="satStart" type="time" class="border p-2 rounded w-1/2"><input id="satEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+    <div><b>星期日</b><div class="flex gap-2"><input id="sunStart" type="time" class="border p-2 rounded w-1/2"><input id="sunEnd" type="time" class="border p-2 rounded w-1/2"></div></div>
+  </div>
 </div>
 
-<div class="card">
-    <h2>📊 一週累積時數</h2>
-    <p id="weeklyHours">0 小時</p>
+<!-- 科目設定 -->
+<div class="bg-white p-4 rounded-xl shadow mb-4">
+  <h2 class="text-xl font-bold mb-2">科目設定</h2>
+  <input id="subjectInput" class="border p-2 rounded w-full mb-2" placeholder="例如：數學, 英文, 國文">
+  <input id="weakSubject" class="border p-2 rounded w-full mb-2" placeholder="最弱科目">
+  <label class="label-muted">讀多久休息（分鐘）</label>
+  <input id="breakEvery" type="number" value="50" class="border p-2 rounded w-full mb-2">
+  <label class="label-muted">休息多久（分鐘）</label>
+  <input id="breakLength" type="number" value="10" class="border p-2 rounded w-full">
 </div>
 
-<div class="card">
-    <h2>💾 匯出 / 匯入</h2>
-    <button class="btn btn-earth" onclick="exportData()">匯出 JSON</button>
-    <input type="file" id="importFile" style="display:none;" onchange="importData(event)">
-    <button class="btn btn-earth" onclick="document.getElementById('importFile').click()">匯入 JSON</button>
+<button id="btnGenerate" class="earth-btn text-white w-full p-3 rounded-lg mb-4 text-lg font-bold">
+  生成讀書日程表
+</button>
+
+<div class="bg-white p-4 rounded-xl shadow">
+  <h2 class="text-xl font-bold mb-4">📅 行事曆</h2>
+  <div id="calendar" class="calendar-grid"></div>
 </div>
 
 <!-- Modal -->
-<div class="modal-bg" id="modalBg">
-    <div class="modal">
-        <p id="modalMsg"></p>
-        <button class="btn btn-earth" onclick="closeModal()">OK</button>
-    </div>
+<div id="modal" class="fixed inset-0 bg-black/40 flex items-center justify-center hidden">
+  <div class="bg-white p-6 rounded-xl w-72 text-center">
+    <p id="modalMsg" class="text-lg mb-4"></p>
+    <button onclick="closeModal()" class="earth-btn text-white px-4 py-2 rounded-lg">好的</button>
+  </div>
 </div>
 
 <script>
-/* -------------------- Modal -------------------- */
-function showMsg(msg){
-    document.getElementById("modalMsg").innerText = msg;
-    document.getElementById("modalBg").style.display = "flex";
+/* ===== Modal ===== */
+function showModal(msg){
+  modalMsg.innerText = msg;
+  modal.classList.remove('hidden');
 }
 function closeModal(){
-    document.getElementById("modalBg").style.display = "none";
+  modal.classList.add('hidden');
 }
 
-/* -------------------- Login（純前端假登入） -------------------- */
-let user = localStorage.getItem("userName") || "";
+/* ===== Background Color ===== */
+const bgSelect = document.getElementById('bgColorSelect');
+const bgClasses = {
+  default: 'bg-default',
+  red: 'bg-red',
+  orange: 'bg-orange',
+  green: 'bg-green',
+  blue: 'bg-blue',
+  purple: 'bg-purple',
+  rainbow: 'bg-rainbow'
+};
 
-function openLogin(){
-    const name = prompt("請輸入名稱：");
-    if(!name) return;
+bgSelect.addEventListener('change', () => {
+  Object.values(bgClasses).forEach(c => document.body.classList.remove(c));
+  document.body.classList.add(bgClasses[bgSelect.value]);
+});
 
-    user = name;
-    localStorage.setItem("userName", user);
+/* ===== Calendar Logic ===== */
+const calendarEl = document.getElementById('calendar');
+const btnGenerate = document.getElementById('btnGenerate');
 
-    showMsg("歡迎你，" + user + "！");
-    updateLoginStatus();
+const weekInputs = {
+  0:{start:sunStart,end:sunEnd},
+  1:{start:monStart,end:monEnd},
+  2:{start:tueStart,end:tueEnd},
+  3:{start:wedStart,end:wedEnd},
+  4:{start:thuStart,end:thuEnd},
+  5:{start:friStart,end:friEnd},
+  6:{start:satStart,end:satEnd}
+};
 
-    setTimeout(() => askStrengthWeak(), 500);
-}
+btnGenerate.onclick = () => {
+  const subjects = subjectInput.value.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!examDate.value || subjects.length===0){
+    showModal('請填寫完整資料');
+    return;
+  }
 
-function updateLoginStatus(){
-    if(user){
-        document.getElementById("loginStatus").innerText = "登入中：" + user;
-    }else{
-        document.getElementById("loginStatus").innerText = "尚未登入";
+  calendarEl.innerHTML = '';
+  const start = new Date();
+  const end = new Date(examDate.value);
+  const weak = weakSubject.value;
+
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    const input = weekInputs[d.getDay()];
+    if(!input.start.value || !input.end.value) continue;
+
+    let [sh,sm] = input.start.value.split(':').map(Number);
+    let [eh,em] = input.end.value.split(':').map(Number);
+    let minutes = eh*60+em - (sh*60+sm);
+    if(minutes<=0) continue;
+
+    const cell = document.createElement('div');
+    cell.className='calendar-cell';
+    cell.innerHTML=`<b>${d.toISOString().split('T')[0]}</b>`;
+
+    let cur = sh*60+sm, i=0;
+    while(minutes>0){
+      const sub = subjects[i%subjects.length];
+      const len = sub===weak ? 100 : 50;
+      const endM = cur+len;
+      const block=document.createElement('div');
+      block.className='task-block';
+      block.innerText=
+        `${String(Math.floor(cur/60)).padStart(2,'0')}:${String(cur%60).padStart(2,'0')}–`+
+        `${String(Math.floor(endM/60)).padStart(2,'0')}:${String(endM%60).padStart(2,'0')} ${sub}`;
+      cell.appendChild(block);
+      cur=endM+10;
+      minutes-=len+10;
+      i++;
     }
-}
+    calendarEl.appendChild(cell);
+  }
 
-function askStrengthWeak(){
-    const strong = prompt("你的強科是？");
-    const weak = prompt("你的弱科是？");
-
-    if(strong) localStorage.setItem("strong", strong);
-    if(weak) localStorage.setItem("weak", weak);
-
-    showMsg("已紀錄你的強科與弱科！");
-}
-
-/* -------------------- Study Data -------------------- */
-let studyList = JSON.parse(localStorage.getItem("studyList") || "[]");
-
-function addStudy(){
-    const subject = document.getElementById("subject").value;
-    const hours = parseInt(document.getElementById("hours").value);
-
-    if(!subject || !hours){
-        showMsg("請輸入完整資料！");
-        return;
-    }
-
-    studyList.push({ subject, hours });
-    localStorage.setItem("studyList", JSON.stringify(studyList));
-
-    renderList();
-    sumWeekly();
-    showMsg("已加入！");
-}
-
-function renderList(){
-    const list = document.getElementById("list");
-    list.innerHTML = "";
-
-    studyList.forEach((item, i)=>{
-        const div = document.createElement("div");
-        div.className = "card";
-        div.innerHTML =
-            `<b>${item.subject}</b> - ${item.hours} 小時<br>
-             <button class='btn btn-red' onclick="del(${i})">刪除</button>`;
-        list.appendChild(div);
-    });
-}
-
-function del(i){
-    studyList.splice(i,1);
-    localStorage.setItem("studyList", JSON.stringify(studyList));
-    renderList();
-    sumWeekly();
-}
-
-/* -------------------- Weekly Hours -------------------- */
-function sumWeekly(){
-    let total = 0;
-    studyList.forEach(s => total += s.hours);
-    document.getElementById("weeklyHours").innerText = total + " 小時";
-}
-
-/* -------------------- Export JSON -------------------- */
-function exportData(){
-    const data = {
-        user,
-        strong: localStorage.getItem("strong"),
-        weak: localStorage.getItem("weak"),
-        studyList
-    };
-
-    const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "study-data.json";
-    a.click();
-}
-
-/* -------------------- Import JSON -------------------- */
-function importData(e){
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(evt){
-        const data = JSON.parse(evt.target.result);
-
-        user = data.user || "";
-        localStorage.setItem("userName", user);
-
-        if(data.strong) localStorage.setItem("strong", data.strong);
-        if(data.weak) localStorage.setItem("weak", data.weak);
-
-        studyList = data.studyList || [];
-        localStorage.setItem("studyList", JSON.stringify(studyList));
-
-        updateLoginStatus();
-        renderList();
-        sumWeekly();
-
-        showMsg("資料匯入成功！");
-    };
-    reader.readAsText(file);
-}
-
-/* Init */
-updateLoginStatus();
-renderList();
-sumWeekly();
-
+  showModal('讀書日程表已生成！');
+};
 </script>
+
 </body>
 </html>
